@@ -6,10 +6,10 @@ setup(
     version="0.1.0",
     packages=["tangoflux"],
     install_requires=[
-        "torch==2.4.0",
-        "torchaudio==2.4.0",
+        "torch==2.7.0",
+        "torchaudio==2.7.0",
         "torchlibrosa==0.1.0",
-        "torchvision==0.19.0",
+        "torchvision",
         "transformers==4.44.0",
         "diffusers==0.30.0",
         "accelerate==0.34.2",
@@ -27,4 +27,7 @@ setup(
             "tangoflux-demo=tangoflux.demo:main",
         ],
     },
+    find_links=[
+        "https://download.pytorch.org/whl/cu126",
+    ],
 )
