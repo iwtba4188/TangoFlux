@@ -6,8 +6,8 @@ setup(
     version="0.1.0",
     packages=["tangoflux"],
     install_requires=[
-        "torch==2.7.0+cu128",
-        "torchaudio==2.7.0+cu128",
+        "torch==2.7.0",
+        "torchaudio==2.7.0",
         "torchlibrosa==0.1.0",
         "torchvision",
         "transformers==4.44.0",
@@ -28,6 +28,6 @@ setup(
         ],
     },
     find_links=[
-        "https://download.pytorch.org/whl/cu128",
+        "https://download.pytorch.org/whl/cu126",
     ],
 )
