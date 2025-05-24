@@ -137,7 +137,7 @@ def retrieve_timesteps(
 
 class TangoFlux(nn.Module):
 
-    def __init__(self, config, text_encoder_dir=None, initialize_reference_model=False,):
+    def __init__(self, config, text_encoder_dir=None, initialize_reference_model=False, cache_dir=None):
 
         super().__init__()
 
@@ -155,19 +155,13 @@ class TangoFlux(nn.Module):
         self.noise_scheduler = FlowMatchEulerDiscreteScheduler(num_train_timesteps=1000)
         self.noise_scheduler_copy = copy.deepcopy(self.noise_scheduler)
         self.max_text_seq_len = 64
-        bnb_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_use_double_quant=True,
-            bnb_4bit_compute_dtype=torch.bfloat16,
-        )
         self.text_encoder = T5EncoderModel.from_pretrained(
             text_encoder_dir if text_encoder_dir is not None else self.text_encoder_name,
-            quantization_config=bnb_config,
+            cache_dir=cache_dir,
         )
         self.tokenizer = T5TokenizerFast.from_pretrained(
             text_encoder_dir if text_encoder_dir is not None else self.text_encoder_name,
-            quantization_config=bnb_config,
+            cache_dir=cache_dir,
         )
         self.text_embedding_dim = self.text_encoder.config.d_model
 
