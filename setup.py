@@ -6,8 +6,8 @@ setup(
     version="0.1.0",
     packages=["tangoflux"],
     install_requires=[
-        "torch==2.7.0",
-        "torchaudio==2.7.0",
+        "torch==2.7.0+cu126",
+        "torchaudio==2.7.0+cu126",
         "torchlibrosa==0.1.0",
         "torchvision",
         "transformers==4.44.0",
