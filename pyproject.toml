@@ -25,6 +25,7 @@ dependencies = [
     "opencv-python",
     "openai>=1.55.0",
     "diffusers", "librosa", "tqdm", "wandb",
+    "huggingface_hub",
 ]
 
 [tool.setuptools.packages.find]

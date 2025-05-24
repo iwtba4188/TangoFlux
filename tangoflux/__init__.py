@@ -27,18 +27,21 @@ class TangoFluxInference:
         self,
         name="declare-lab/TangoFlux",
         device="cuda" if torch.cuda.is_available() else "cpu",
+        cache_dir=None,
+        local_files_only=False,
+        text_encoder_dir=None,
     ):
 
         self.vae = AutoencoderOobleck()
 
-        paths = snapshot_download(repo_id=name)
+        paths = snapshot_download(repo_id=name, cache_dir=cache_dir, local_files_only=local_files_only)
         vae_weights = load_file("{}/vae.safetensors".format(paths))
         self.vae.load_state_dict(vae_weights)
         weights = load_file("{}/tangoflux.safetensors".format(paths))
 
         with open("{}/config.json".format(paths), "r") as f:
             config = json.load(f)
-        self.model = TangoFlux(config)
+        self.model = TangoFlux(config, text_encoder_dir=text_encoder_dir)
         self.model.load_state_dict(weights, strict=False)
         # _IncompatibleKeys(missing_keys=['text_encoder.encoder.embed_tokens.weight'], unexpected_keys=[]) this behaviour is expected
         self.vae.to(device)
