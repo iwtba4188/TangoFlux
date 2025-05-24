@@ -29,7 +29,6 @@ class TangoFluxInference:
         device="cuda" if torch.cuda.is_available() else "cpu",
         cache_dir=None,
         local_files_only=False,
-        text_encoder_dir=None,
     ):
 
         self.vae = AutoencoderOobleck()
@@ -41,7 +40,7 @@ class TangoFluxInference:
 
         with open("{}/config.json".format(paths), "r") as f:
             config = json.load(f)
-        self.model = TangoFlux(config, text_encoder_dir=text_encoder_dir)
+        self.model = TangoFlux(config, cache_dir=cache_dir)
         self.model.load_state_dict(weights, strict=False)
         # _IncompatibleKeys(missing_keys=['text_encoder.encoder.embed_tokens.weight'], unexpected_keys=[]) this behaviour is expected
         self.vae.to(device)
