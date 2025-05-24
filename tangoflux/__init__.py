@@ -19,6 +19,7 @@ import json
 import inspect
 import yaml
 from safetensors.torch import load_file
+from accelerate import init_empty_weights, load_checkpoint_and_dispatch
 
 
 class TangoFluxInference:
@@ -31,20 +32,22 @@ class TangoFluxInference:
         local_files_only=False,
     ):
 
-        self.vae = AutoencoderOobleck()
+        paths = snapshot_download(repo_id=name, cache_dir=cache_dir, local_files_only=local_files_only)           
 
-        paths = snapshot_download(repo_id=name, cache_dir=cache_dir, local_files_only=local_files_only)
-        vae_weights = load_file("{}/vae.safetensors".format(paths))
-        self.vae.load_state_dict(vae_weights)
-        weights = load_file("{}/tangoflux.safetensors".format(paths))
+        with init_empty_weights():
+            self.vae = AutoencoderOobleck()
+        self.vae = load_checkpoint_and_dispatch(
+            self.vae, checkpoint="{}/vae.safetensors".format(paths), device_map="auto"
+        )
 
         with open("{}/config.json".format(paths), "r") as f:
             config = json.load(f)
-        self.model = TangoFlux(config, cache_dir=cache_dir)
-        self.model.load_state_dict(weights, strict=False)
-        # _IncompatibleKeys(missing_keys=['text_encoder.encoder.embed_tokens.weight'], unexpected_keys=[]) this behaviour is expected
-        self.vae.to(device)
-        self.model.to(device)
+
+        with init_empty_weights():
+            self.model = TangoFlux(config, cache_dir=cache_dir)
+        self.model = load_checkpoint_and_dispatch(
+            self.model, checkpoint="{}/tangoflux.safetensors".format(paths), device_map="auto"
+        )
 
     def generate(self, prompt, steps=25, duration=10, guidance_scale=4.5):
 
