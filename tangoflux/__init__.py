@@ -30,6 +30,7 @@ class TangoFluxInference:
         device="cuda" if torch.cuda.is_available() else "cpu",
         cache_dir=None,
         local_files_only=False,
+        device_map="auto",
     ):
 
         paths = snapshot_download(repo_id=name, cache_dir=cache_dir, local_files_only=local_files_only)           
@@ -37,7 +38,7 @@ class TangoFluxInference:
         with init_empty_weights():
             self.vae = AutoencoderOobleck()
         self.vae = load_checkpoint_and_dispatch(
-            self.vae, checkpoint="{}/vae.safetensors".format(paths), device_map="auto"
+            self.vae, checkpoint="{}/vae.safetensors".format(paths), device_map=device_map
         )
 
         with open("{}/config.json".format(paths), "r") as f:
@@ -46,7 +47,7 @@ class TangoFluxInference:
         with init_empty_weights():
             self.model = TangoFlux(config, cache_dir=cache_dir)
         self.model = load_checkpoint_and_dispatch(
-            self.model, checkpoint="{}/tangoflux.safetensors".format(paths), device_map="auto"
+            self.model, checkpoint="{}/tangoflux.safetensors".format(paths), device_map=device_map
         )
 
     def generate(self, prompt, steps=25, duration=10, guidance_scale=4.5):
