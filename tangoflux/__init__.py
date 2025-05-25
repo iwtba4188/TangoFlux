@@ -19,7 +19,8 @@ import json
 import inspect
 import yaml
 from safetensors.torch import load_file
-from accelerate import init_empty_weights, load_checkpoint_and_dispatch
+from accelerate import init_empty_weights, load_checkpoint_and_dispatch, infer_auto_device_map
+from accelerate.utils import get_balanced_memory
 
 
 class TangoFluxInference:
