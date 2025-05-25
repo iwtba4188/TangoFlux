@@ -30,25 +30,43 @@ class TangoFluxInference:
         device="cuda" if torch.cuda.is_available() else "cpu",
         cache_dir=None,
         local_files_only=False,
-        device_map="auto",
+        max_memory_setting=None,
     ):
+        def setup_device_map_then_load(model, checkpoint):
+            max_memory = get_balanced_memory(
+                model,
+                max_memory={0: "15GiB", 1: "15GiB"} if max_memory_setting is None else max_memory_setting,
+                no_split_module_classes=[
+                    "T5Block",
+                    "T5LayerFF",
+                    "T5LayerSelfAttention", 
+                    "T5Stack",
+                ],
+                low_zero=False,
+            )
+            device_map = infer_auto_device_map(
+                model,
+                max_memory=max_memory,
+                no_split_module_classes=[
+                    "T5Block",
+                    "T5LayerFF",
+                    "T5LayerSelfAttention", 
+                    "T5Stack",
+                ],
+            )
+            return load_checkpoint_and_dispatch(model, checkpoint=checkpoint, device_map=device_map)
 
         paths = snapshot_download(repo_id=name, cache_dir=cache_dir, local_files_only=local_files_only)           
 
         with init_empty_weights():
             self.vae = AutoencoderOobleck()
-        self.vae = load_checkpoint_and_dispatch(
-            self.vae, checkpoint="{}/vae.safetensors".format(paths), device_map=device_map
-        )
+        self.vae = setup_device_map_then_load(self.vae, checkpoint="{}/vae.safetensors".format(paths))
 
         with open("{}/config.json".format(paths), "r") as f:
             config = json.load(f)
-
         with init_empty_weights():
             self.model = TangoFlux(config, cache_dir=cache_dir)
-        self.model = load_checkpoint_and_dispatch(
-            self.model, checkpoint="{}/tangoflux.safetensors".format(paths), device_map=device_map
-        )
+        self.model = setup_device_map_then_load(self.model, checkpoint="{}/tangoflux.safetensors".format(paths))
 
     def generate(self, prompt, steps=25, duration=10, guidance_scale=4.5):
 
